@@ -1,0 +1,29 @@
+---
+# Common Tasks
+
+- name: Epel Repository
+  yum_repository:
+    name: epel
+    description: epel-repo
+    baseurl: https://download.fedoraproject.org/pub/epel/$releasever/$basearch/
+    gpgcheck: yes
+    gpgkey: http://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7
+
+- name: Ceph Repository
+  yum_repository:
+    name: ceph
+    description: ceph-repo
+    baseurl: https://download.ceph.com/rpm-jewel/el$releasever/$basearch/
+    gpgcheck: yes
+    gpgkey: https://download.ceph.com/keys/release.asc
+
+- name: Install NTP
+  yum:
+    name: ntp
+    state: present
+  notify: "restart ntp service"
+
+- name: Install Ceph
+  yum:
+    name: ceph
+    state: present

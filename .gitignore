@@ -1,0 +1,3 @@
+disk-*
+.vagrant
+site.retry

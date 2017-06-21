@@ -1,0 +1,6 @@
+---
+# Playbook responsible to deploy full ceph stack
+
+- hosts: all
+  roles:
+    - common

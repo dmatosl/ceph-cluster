@@ -1,0 +1,5 @@
+---
+# Common Handlers
+
+- name: restart ntp service
+  service: name=ntpd state=restarted enabled=yes
