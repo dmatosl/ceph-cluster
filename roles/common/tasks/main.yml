@@ -1,6 +1,12 @@
 ---
 # Common Tasks
 
+- name: Restart Network Service
+  shell: systemctl restart network && touch /root/.ansible_restart_network_once
+  register: restart_network_service
+  args:
+    creates: /root/.ansible_restart_network_once
+
 - name: Epel Repository
   yum_repository:
     name: epel
@@ -10,12 +16,9 @@
     gpgkey: http://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7
 
 - name: Ceph Repository
-  yum_repository:
-    name: ceph
-    description: ceph-repo
-    baseurl: https://download.ceph.com/rpm-jewel/el$releasever/$basearch/
-    gpgcheck: yes
-    gpgkey: https://download.ceph.com/keys/release.asc
+  copy:
+    src: etc/yum.repos.d/ceph.repo
+    dest: /etc/yum.repos.d/ceph.repo
 
 - name: Install NTP
   yum:
@@ -23,7 +26,30 @@
     state: present
   notify: "restart ntp service"
 
-- name: Install Ceph
-  yum:
-    name: ceph
-    state: present
+- name: Install Ceph Dependecies
+  yum: name={{item}} state=present
+  with_items:
+    - snappy
+    - leveldb
+    - gdisk
+    - python-argparse
+    - gperftools-libs
+
+- name: Install Ceph from Ceph repository
+  yum: name=ceph state=present
+
+- name: Create Ceph configuration directory
+  file:
+    path: /etc/ceph
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy Ceph configuration files
+  copy:
+    src: etc/ceph/{{ item }}
+    dest: /etc/ceph/{{ item }}
+  with_items:
+    - ceph.conf
+
