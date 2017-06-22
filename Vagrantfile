@@ -21,7 +21,7 @@ Vagrant.configure("2") do |config|
     config.vm.define "mon#{vm_id}" do |mon|
       mon.vm.hostname = "mon#{vm_id}"
       mon.vm.network "private_network", ip: "192.168.33.#{ip_sufix}"
-      mon.vm.network "public_network", ovs:true, network_name: "ovsnet", dev:"br0"
+      #mon.vm.network "public_network", ovs:true, network_name: "ovsnet", dev:"br0"
 
       # Provider Virtualbox
       mon.vm.provider :virtualbox do |vb|
@@ -41,7 +41,7 @@ Vagrant.configure("2") do |config|
     config.vm.define "osd#{vm_id}" do |osd|
       osd.vm.hostname = "osd#{vm_id}"
       osd.vm.network "private_network", ip: "192.168.33.#{ip_sufix}"
-      osd.vm.network "public_network", ovs:true, network_name: "ovsnet", dev:"br0"
+      #osd.vm.network "public_network", ovs:true, network_name: "ovsnet", dev:"br0"
 
       # Provider Virtualbox
       osd.vm.provider :virtualbox do |vb|
@@ -84,6 +84,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "ansible" do |ansible|
 	  ansible.sudo = true
 	  ansible.playbook = "site.yml"
+	  ansible.verbose = "v"
 	  ansible.groups = {
             'mon' => (1..N_MON_HOSTS).map { |m| "mon#{m}"},
             'osd' => (1..N_OSD_HOSTS).map { |m| "osd#{m}"}
