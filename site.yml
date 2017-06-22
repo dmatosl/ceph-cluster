@@ -4,3 +4,7 @@
 - hosts: all
   roles:
     - common
+
+- hosts: mon
+  roles:
+    - mon
