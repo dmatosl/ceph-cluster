@@ -8,3 +8,6 @@
 - hosts: mon
   roles:
     - mon
+- hosts: osd
+  roles:
+    - osd
