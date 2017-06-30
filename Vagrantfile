@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
   #
   # OSD_SETTINGS
   OSD_MEMORY=1024
-  N_OSD_HOSTS=2
+  N_OSD_HOSTS=3
   N_DISK_OSD=3
 
   ### MON HOSTS SETUP
