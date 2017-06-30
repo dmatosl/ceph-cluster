@@ -1,3 +1,5 @@
 ---
 # Shared Variables
 fsid: 0e489dee-6f28-4ed5-b68f-0711562bdd48
+cluster_name: ceph
+fetch_directory: fetch/

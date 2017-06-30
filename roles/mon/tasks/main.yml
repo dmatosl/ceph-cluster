@@ -1,19 +1,21 @@
 ---
 # mon tasks
 
-- name: Copy ceph.client.admin.keyring
-  copy:
-    src: etc/ceph/ceph.client.admin.keyring
-    dest: /etc/ceph/ceph.client.admin.keyring
-    owner: ceph
-    group: ceph
+- name: Generate Admin Keyring
+  shell: ceph-authtool --create-keyring /etc/ceph/ceph.client.admin.keyring --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow' && chown ceph:ceph /etc/ceph/ceph.client.admin.keyring
+  args:
+    creates: /etc/ceph/ceph.client.admin.keyring
+  
+- name: Generate Mon Keyring
+  shell: ceph-authtool --create-keyring /tmp/ceph.mon.keyring --gen-key -n mon. --cap mon 'allow *' && chown ceph:ceph /tmp/ceph.mon.keyring
+  args:
+    creates: /tmp/ceph.mon.keyring
 
-- name: Copy ceph.mon.keyring
-  copy:
-    src: tmp/ceph.mon.keyring
-    dest: /tmp/ceph.mon.keyring
-    owner: ceph
-    group: ceph
+- name: add client.admin to ceph.mon.keyring
+  shell: ceph-authtool /tmp/ceph.mon.keyring --import-keyring /etc/ceph/ceph.client.admin.keyring && touch /root/.{{cluster_name}}_import_admin_key
+  register: import_admin_keyring_to_mon_keyring
+  args:
+    creates: /root/.{{cluster_name}}_import_admin_key_to_mon_keyring
 
 - name: Generate monmaptool
   shell: monmaptool --create --add {{ ansible_hostname }} {{ ansible_eth1['ipv4']['address'] }} --fsid {{ fsid }} /tmp/monmap
@@ -35,5 +37,15 @@
   service:
     name: ceph-mon@mon1
     state: started
-# generate monmaptool monmaptool --create --add {{ ansible_hostname }} {{ ansible_eth1['ipv4']['address'] }} --fsid {{ fsid }} /tmp/monmap
-# mkfs ceph-mon ceph-mon --mkfs -i {{ ansible_hostname }} --monmap /tmp/monmap --keyring /tmp/ceph.mon.keyring
+
+# Fetch keys 
+- name: Fetch Keys
+  fetch:
+    src: "{{ item }}"
+    dest: "{{ fetch_directory }}{{ item }}"
+    flat: yes
+  with_items:
+    - /etc/ceph/{{cluster_name}}.client.admin.keyring
+    - /var/lib/ceph/bootstrap-osd/{{ cluster_name }}.keyring
+    - /var/lib/ceph/bootstrap-mds/{{ cluster_name }}.keyring
+    - /var/lib/ceph/bootstrap-rgw/{{ cluster_name }}.keyring
