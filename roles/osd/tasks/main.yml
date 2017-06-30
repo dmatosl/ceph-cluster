@@ -1,0 +1,38 @@
+---
+# Installs/configures osds
+
+- name: add osd bootstrap key
+  copy:
+    src: "{{ fetch_directory }}{{ item }}"
+    dest: "{{ item }}"
+    owner: ceph
+    group: ceph
+    mode: 0644
+  with_items:
+    - /etc/ceph/ceph.client.admin.keyring
+    - /var/lib/ceph/bootstrap-osd/{{ cluster_name }}.keyring
+    - /var/lib/ceph/bootstrap-mds/{{ cluster_name }}.keyring
+    - /var/lib/ceph/bootstrap-rgw/{{ cluster_name }}.keyring
+
+- name: added GPT label to partitions
+  shell: parted {{item}} mklabel -s GPT && touch /root/.{{cluster_name}}_parted_mklabel{{item | regex_replace('/', '_') }}_gpt
+  register: add_gpt_label_to_partitions
+  args:
+    creates: /root/.{{cluster_name}}_parted_mklabel{{item | regex_replace('/', '_') }}_gpt
+  with_items: "{{osd_disks}}"
+
+- name: ceph disk prepare
+  shell: ceph-disk prepare --cluster {{cluster_name}} --cluster-uuid {{fsid}} --fs-type xfs {{item}}
+  register: ceph_disk_prepare
+  args:
+    creates: /dev/{{item}}1
+  with_items: "{{osd_disks}}"
+
+- name: activate ceph disks
+  shell: ceph-disk activate "{{item}}1"
+  register: ceph_disk_activate
+  args:
+    creates: 
+  with_items: "{{osd_disks}}"
+
+

@@ -1,0 +1,4 @@
+osd_disks:
+  - /dev/vdb
+  - /dev/vdc
+  - /dev/vdd
