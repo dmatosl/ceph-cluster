@@ -1,3 +1,4 @@
 disk-*
 .vagrant
 site.retry
+fetch/
